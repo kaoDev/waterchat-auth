@@ -1,0 +1,27 @@
+{
+  "extends": "tslint-config-xo/esnext",
+  "rules": {
+    "indent": [
+      true,
+      "spaces"
+    ],
+    "ter-indent": [
+      true,
+      "space",
+      {
+        "SwitchCase": 2,
+        "FunctionDeclaration": {
+          "parameters": 2,
+          "body": 2
+        },
+        "FunctionExpression": {
+          "parameters": 2,
+          "body": 2
+        },
+        "CallExpression": {
+          "arguments": 2
+        }
+      }
+    ] // + indent
+  }
+}

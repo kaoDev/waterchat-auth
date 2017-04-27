@@ -1,0 +1,8 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.USER_REGISTERED = 'USER_REGISTERED';
+exports.USER_PROFILE_CHANGED = 'USER_PROFILE_CHANGED';
+exports.USER_EMAIL_ADDRESS_CHANGED = 'USER_EMAIL_ADDRESS_CHANGED';
+exports.USER_PASSWORD_CHANGED = 'USER_PASSWORD_CHANGED';
+exports.USER_LOGGED_IN = 'USER_LOGGED_IN';
+exports.USER_LOGGED_OUT = 'USER_LOGGED_OUT';
