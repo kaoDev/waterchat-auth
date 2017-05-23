@@ -1,114 +1,32 @@
 import {
     UserEvent,
     UserRegistered,
-    UserPasswordChanged,
     UserProfileChanged,
-    UserLoggedIn,
     UserLoggedOut,
-    UserEmailAddressChanged,
-    USER_EMAIL_ADDRESS_CHANGED,
-    USER_LOGGED_IN,
+    UserTokenValidated,
+    UserLoggedIn,
     USER_LOGGED_OUT,
-    USER_PASSWORD_CHANGED,
     USER_PROFILE_CHANGED,
-    USER_REGISTERED
+    USER_REGISTERED,
+    USER_TOKEN_VALIDATED,
+    USER_LOGGED_IN
 } from '../events/UserEvents';
 import {
     State
 } from '../model/State';
-import {
-    User,
-    EmailUser
-} from '../model/User';
 
 export const initialState: State = Object.freeze({
     users: []
 });
 
-const createStateWithNewEmailUser = ({ users: oldUsers, ...rest }: State) => ({ displayName, email, passwordHash, userId: id }: UserRegistered): State => {
-    const user: EmailUser = {
-        id,
-        email,
-        displayName,
-        passwordHash,
-        registered: true
-    };
-
-    const users = [...oldUsers, user];
-
-    return Object.freeze({
-        ...rest,
-        users
-    });
-};
-
-const createStateWithChangedPassword = ({ users: oldUsers, ...rest }: State) => ({ passwordHash, userId }: UserPasswordChanged): State => {
-
-    const users = oldUsers.map(user => {
-        if (user.registered && user.id === userId) {
-            return Object.freeze({
-                ...user,
-                passwordHash
-            });
-        }
-        else {
-            return user;
-        }
-    });
-
-    return Object.freeze({
-        ...rest,
-        users
-    });
-};
-
 const createStateWithChangedProfile = ({ users: oldUsers, ...rest }: State) => ({ userId, displayName }: UserProfileChanged): State => {
     const users = oldUsers.map(user => {
-        if (user.registered && user.id === userId) {
+        if (user.userId === userId) {
             return Object.freeze({
                 ...user,
                 displayName
             });
-        }
-        else {
-            return user;
-        }
-    });
-
-    return Object.freeze({
-        ...rest,
-        users
-    });
-};
-
-const createStateWithChangedEmail = ({ users: oldUsers, ...rest }: State) => ({ userId, email }: UserEmailAddressChanged): State => {
-    const users = oldUsers.map(user => {
-        if (user.registered && user.id === userId) {
-            return Object.freeze({
-                ...user,
-                email
-            });
-        }
-        else {
-            return user;
-        }
-    });
-
-    return Object.freeze({
-        ...rest,
-        users
-    });
-};
-
-const createStateWithUserLoggedIn = ({ users: oldUsers, ...rest }: State) => ({ userId, token: sessionToken }: UserLoggedIn): State => {
-    const users = oldUsers.map(user => {
-        if (user.registered && user.id === userId) {
-            return Object.freeze({
-                ...user,
-                sessionToken
-            });
-        }
-        else {
+        } else {
             return user;
         }
     });
@@ -121,13 +39,13 @@ const createStateWithUserLoggedIn = ({ users: oldUsers, ...rest }: State) => ({ 
 
 const createStateWithUserLoggedOut = ({ users: oldUsers, ...rest }: State) => ({ userId }: UserLoggedOut): State => {
     const users = oldUsers.map(user => {
-        if (user.registered && user.id === userId) {
+        if (user.userId === userId) {
             return Object.freeze({
                 ...user,
-                sessionToken: undefined
+                token: '',
+                algorithm: ''
             });
-        }
-        else {
+        } else {
             return user;
         }
     });
@@ -138,20 +56,84 @@ const createStateWithUserLoggedOut = ({ users: oldUsers, ...rest }: State) => ({
     });
 };
 
+const createStateWithNewUser = ({ users: oldUsers, ...rest }: State) =>
+    ({ type, rawInfo, ...userData }: UserRegistered): State => {
+        const users = oldUsers.concat(userData);
+
+        return Object.freeze({
+            ...rest,
+            users
+        });
+    };
+
+const createStateWithUpdatedValidationUser = ({ users: oldUsers, ...rest }: State) =>
+    ({ type, provider, token: accessToken, id, ...userData }: UserTokenValidated): State => {
+
+        const users = oldUsers.map(u => {
+            if (u.userId === userData.userId) {
+                const oldIdentifierIndex = u.identifiers.findIndex(i => i.provider === provider);
+                const unchangedIdentifiers = u.identifiers.splice(oldIdentifierIndex, 1);
+
+                return {
+                    ...u,
+                    identifiers: [
+                        ...unchangedIdentifiers,
+                        {
+                            provider,
+                            accessToken,
+                            id,
+                            timestamp: Date.now()
+                        }
+                    ]
+                };
+            }
+            else {
+                return u;
+            }
+        });
+
+        return Object.freeze({
+            ...rest,
+            users
+        });
+    };
+
+const createStateWithLoggedInUser = ({ users: oldUsers, ...rest }: State) =>
+    ({ type, rawInfo, identifiers, ...userData }: UserLoggedIn): State => {
+
+        const users = oldUsers.map(u => {
+            if (u.userId === userData.userId) {
+                return {
+                    ...u,
+                    identifiers: [
+                        ...u.identifiers,
+                        ...identifiers
+                    ]
+                };
+            }
+            else {
+                return u;
+            }
+        });
+
+        return Object.freeze({
+            ...rest,
+            users
+        });
+    };
+
 export const updateUserState = (state: State = initialState) => (event: UserEvent): State => {
     switch (event.type) {
         case USER_REGISTERED:
-            return createStateWithNewEmailUser(state)(event);
-        case USER_PASSWORD_CHANGED:
-            return createStateWithChangedPassword(state)(event);
+            return createStateWithNewUser(state)(event);
         case USER_PROFILE_CHANGED:
             return createStateWithChangedProfile(state)(event);
-        case USER_EMAIL_ADDRESS_CHANGED:
-            return createStateWithChangedEmail(state)(event);
         case USER_LOGGED_IN:
-            return createStateWithUserLoggedIn(state)(event);
+            return createStateWithLoggedInUser(state)(event);
         case USER_LOGGED_OUT:
             return createStateWithUserLoggedOut(state)(event);
+        case USER_TOKEN_VALIDATED:
+            return createStateWithUpdatedValidationUser(state)(event);
         default:
             return state;
     }

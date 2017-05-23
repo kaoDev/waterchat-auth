@@ -1,62 +1,57 @@
-export type UserId = {
-    readonly userId: string;
-};
-
-export type UserDisplayName = {
-    readonly displayName: string;
-};
-
-export type UserEmail = {
-    readonly email: string;
-};
-
-export type UserPasswordHash = {
-    readonly passwordHash: string;
-};
+import {
+    UserId,
+    UserDisplayName,
+    OAuthRaw,
+    UserIdentifier
+} from '../model/User';
+import {
+    ValidationResult
+} from '../authentication/github';
 
 export const USER_REGISTERED = 'USER_REGISTERED';
 export const USER_PROFILE_CHANGED = 'USER_PROFILE_CHANGED';
-export const USER_EMAIL_ADDRESS_CHANGED = 'USER_EMAIL_ADDRESS_CHANGED';
-export const USER_PASSWORD_CHANGED = 'USER_PASSWORD_CHANGED';
 export const USER_LOGGED_IN = 'USER_LOGGED_IN';
 export const USER_LOGGED_OUT = 'USER_LOGGED_OUT';
+export const USER_TOKEN_VALIDATED = 'USER_TOKEN_VALIDATED';
 
 export type UserEventType = typeof USER_REGISTERED
     | typeof USER_PROFILE_CHANGED
-    | typeof USER_EMAIL_ADDRESS_CHANGED
-    | typeof USER_PASSWORD_CHANGED
     | typeof USER_LOGGED_IN
     | typeof USER_LOGGED_OUT;
 
-export type UserRegistered = UserId & UserDisplayName & UserEmail & UserPasswordHash & {
-    readonly type: typeof USER_REGISTERED;
-};
+export type UserRegistered = UserId &
+    UserIdentifier &
+    UserDisplayName &
+    OAuthRaw &
+    {
+        readonly type: typeof USER_REGISTERED;
+    };
 
-export type UserProfileChanged = UserId & UserDisplayName & {
-    readonly type: typeof USER_PROFILE_CHANGED
-};
+export type UserProfileChanged = UserId &
+    Partial<UserDisplayName> &
+    {
+        readonly type: typeof USER_PROFILE_CHANGED
+    };
 
-export type UserEmailAddressChanged = UserId & UserEmail & {
-    readonly type: typeof USER_EMAIL_ADDRESS_CHANGED
-};
-
-export type UserPasswordChanged = UserId & UserPasswordHash & {
-    readonly type: typeof USER_PASSWORD_CHANGED;
-};
-
-export type UserLoggedIn = UserId & {
-    readonly type: typeof USER_LOGGED_IN
-    readonly token: string;
-};
+export type UserLoggedIn = UserId &
+    OAuthRaw &
+    UserIdentifier &
+    {
+        readonly type: typeof USER_LOGGED_IN
+    };
 
 export type UserLoggedOut = UserId & {
     readonly type: typeof USER_LOGGED_OUT;
 };
 
+export type UserTokenValidated = UserId & ValidationResult & {
+    readonly provider: 'github';
+    readonly type: typeof USER_TOKEN_VALIDATED
+};
+
 export type UserEvent =
     UserRegistered
+    | UserTokenValidated
     | UserProfileChanged
-    | UserEmailAddressChanged
-    | UserPasswordChanged
     | UserLoggedIn
     | UserLoggedOut;

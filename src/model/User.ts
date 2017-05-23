@@ -1,26 +1,26 @@
-export type UserBaseInfo = {
-    readonly id: string,
-    readonly displayName: string,
-    readonly email?: string,
-    readonly passwordHash?: string,
-    readonly token?: string,
-    readonly sessionToken?: string
+import { GitHubOauthUnScopedResult } from 'microauth';
+
+export type UserId = {
+    readonly userId: string;
 };
 
-export type DeletedUser = UserBaseInfo & {
-    readonly displayName: '[deleted]',
-    readonly registered: false
+export type UserDisplayName = {
+    readonly displayName: string;
 };
 
-export type EmailUser = UserBaseInfo & {
-    readonly email: string,
-    readonly passwordHash: string,
-    readonly registered: true
+export type OAuthRaw = {
+    readonly rawInfo: GitHubOauthUnScopedResult
 };
 
-export type TokenUser = UserBaseInfo & {
-    readonly token: string,
-    readonly registered: true
+export type GitHubUserIdentifier = {
+    readonly provider: 'github',
+    readonly accessToken: string,
+    readonly id: number,
+    readonly timestamp: number
 };
 
-export type User = DeletedUser | EmailUser | TokenUser;
+export type UserIdentifier = {
+    readonly identifiers: GitHubUserIdentifier[]
+};
+
+export type User = UserId & UserDisplayName & UserIdentifier;

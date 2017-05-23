@@ -2,10 +2,11 @@
   "name": "waterchat-micro-auth",
   "version": "1.0.0",
   "description": "My rad microservice",
-  "author": " <>",
+  "author": "Kalle Ott",
   "repository": "kaoDev/waterchat-micro-auth",
   "license": "MIT",
   "scripts": {
+    "build": "tsc",
     "start": "micro",
     "test": "tslint . && tsc -p ./tsconfig.test.json && ava"
   },
@@ -13,17 +14,29 @@
     "node": ">= 6"
   },
   "files": [
-    "dist/index.js"
+    "dist"
   ],
   "main": "dist/index.js",
   "dependencies": {
+    "@types/cookies": "^0.6.1",
+    "@types/jsonwebtoken": "^7.2.0",
+    "@types/request-promise": "^4.1.33",
     "@types/uuid": "^2.0.29",
+    "cookies": "^0.7.0",
+    "eventstore-node": "^0.1.0",
+    "fs-router": "^0.3.0",
+    "jsonwebtoken": "^7.4.0",
     "micro": "^7.0.0",
     "micro-compose": "^0.0.3",
+    "micro-redirect": "^1.0.0",
     "microauth-facebook": "^0.0.3",
     "microauth-github": "^0.0.4",
     "microauth-slack": "^0.0.1",
     "microauth-twitter": "^0.1.1",
+    "querystring": "^0.2.0",
+    "request-promise": "^4.2.0",
+    "rxdb": "^4.0.0",
+    "rxjs": "^5.4.0",
     "typescript": "^2.3",
     "uuid": "^3.0.1"
   },
