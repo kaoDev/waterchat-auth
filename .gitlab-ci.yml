@@ -3,10 +3,8 @@
 # https://hub.docker.com/r/library/node/tags/
 image: node:7.10
 
-# Pick zero or more services to be used on all builds.
-# Only needed when using a docker container to run your tests in.
-# Check out: http://docs.gitlab.com/ce/ci/docker/using_docker_images.html#what-is-service
-
+before_script:
+- npm install
 
 # This folder is cached between builds
 # http://docs.gitlab.com/ce/ci/yaml/README.html#cache
@@ -16,7 +14,6 @@ cache:
 
 test_async:
   script:
-   - npm install
    - npm build
    - npm test
 
