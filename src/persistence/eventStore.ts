@@ -1,4 +1,5 @@
-import * as esClient from 'eventstore-node';
+import * as esClient from 'node-eventstore-client';
+import { HeartbeatInfo, TcpEndPoint } from 'node-eventstore-client';
 import * as uuid from 'uuid';
 import { UserEvent } from '../events/UserEvents';
 import { State } from '../model/State';
@@ -8,7 +9,7 @@ import { ReplaySubject } from 'rxjs';
 
 const streamName = 'userEvents';
 
-const host = 'localhost';
+const host = 'eventstore';
 const tcpPort = '1113';
 const httpPort = '2113';
 
@@ -21,7 +22,14 @@ esConnection.on('connected', tcpEndPoint => {
     } else if (typeof tcpEndPoint === 'string') {
         console.error('got string instead of endpoint object', tcpEndPoint);
     } else {
-        console.log(`Connected to eventstore at ${tcpEndPoint.host}:${tcpEndPoint.port}`);
+        if ((tcpEndPoint as TcpEndPoint).host) {
+            console.log(`Connected to eventstore at ${(tcpEndPoint as TcpEndPoint).host}:${(tcpEndPoint as TcpEndPoint).port}`);
+        }
+        else {
+            const endpoint = (tcpEndPoint as HeartbeatInfo).remoteEndPoint;
+
+            console.log(`Connected to eventstore at ${endpoint.host}:${endpoint.port}`);
+        }
 
         const resolveLinkTos = false;
 
@@ -30,7 +38,6 @@ esConnection.on('connected', tcpEndPoint => {
             (subscription, event) => {
                 if (event.originalEvent !== undefined && event.originalEvent.data !== undefined) {
                     const parsedEvent = JSON.parse(event.originalEvent.data.toString()) as UserEvent;
-                    console.log(parsedEvent);
                     eventStream.next(parsedEvent);
                 }
             },
