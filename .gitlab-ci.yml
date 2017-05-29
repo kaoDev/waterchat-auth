@@ -10,6 +10,7 @@ stages:
 build:
   stage: build
   script:
+    - whoami
     - docker build -t $DEPLOYMENT_IMAGE .
   tags:
     - shell
