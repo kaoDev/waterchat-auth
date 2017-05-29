@@ -5,6 +5,7 @@ variables:
 stages:
   - build
   - test
+  - clean
   - deploy
   
 build:
@@ -24,11 +25,18 @@ test:
     - docker
   allow_failure: true
 
-deploy:
-  stage: deploy
+clean:
+  stage: clean
   script:
     - docker stop $DEPLOYMENT_CONTAINER
     - docker rm $DEPLOYMENT_CONTAINER
+  tags:
+    - shell
+  allow_failure: true
+
+deploy:
+  stage: deploy
+  script:
     - docker run -d -p 3000:3000 --restart=always $DEPLOYMENT_IMAGE --name=$DEPLOYMENT_CONTAINER
     - docker exec -it $DEPLOYMENT_CONTAINER yarn start
   tags:
