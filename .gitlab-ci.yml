@@ -1,5 +1,5 @@
 variables:
-  REGISTRY: 10.0.0.22:4567
+  REGISTRY: https://office.cap3.de:52203
 
 stages:
   - test
