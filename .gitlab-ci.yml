@@ -16,8 +16,6 @@ build:
     - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY
     - docker build -t $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME .
     - docker push $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME
-  only:
-    - production
   tags:
     - docker
 
