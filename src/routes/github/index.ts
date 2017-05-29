@@ -2,7 +2,7 @@ import { send } from 'micro';
 import * as uuid from 'uuid';
 import * as redirect from 'micro-redirect';
 import { IncomingMessage, ServerResponse } from 'http';
-import { getRedirectUrl, userHasValidCookie } from '../../../authentication/github';
+import { getRedirectUrl, userHasValidCookie } from '../../authentication/github';
 import * as url from 'url';
 import * as querystring from 'querystring';
 
@@ -29,6 +29,8 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
 
     const { callback } = querystring.parse(query);
 
+    console.log('auth request with callback', callback);
+
     const validationResult = await userHasValidCookie(req, res);
     if (validationResult === false) {
         try {
@@ -40,7 +42,7 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
             return send(res, 403);
         }
     } else {
-        return redirect(res, 302, '/protected');
+        return redirect(res, 302, callback);
     }
 
 };

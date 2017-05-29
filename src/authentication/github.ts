@@ -2,7 +2,8 @@ import * as rp from 'request-promise';
 import { loadCredentials } from './credentials';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as redirect from 'micro-redirect';
-import * as Cookies from 'cookies';
+import { getSession } from '../logic/SessionFunctions';
+import { userState } from '../persistence/eventStore';
 
 export const getRedirectUrl = async (state: string) => {
     const { clientId, callbackUrl, scope } = await loadCredentials({ provider: 'github' });
@@ -101,14 +102,19 @@ export const validateToken = async (accessToken: string): Promise<ValidationResu
     }
 };
 
+export const extractGitHubIdentifier = async (req: IncomingMessage, res: ServerResponse) => {
+    const userAggregateState = await userState.take(1).toPromise();
+    const session = getSession(req, res, userAggregateState);
+
+    if (session !== undefined) {
+        return session.user.identifiers.find(identifier => identifier.provider === 'github');
+    }
+};
+
 export const userHasValidCookie = async (req: IncomingMessage, res: ServerResponse) => {
-    const cookies = new Cookies(req, res);
-
-    const provider = cookies.get('provider');
-    const accessToken = cookies.get('accessToken');
-
-    if (provider && accessToken) {
-        return await validateToken(accessToken);
+    const githubIdentifier = await extractGitHubIdentifier(req, res);
+    if (githubIdentifier !== undefined) {
+        return await validateToken(githubIdentifier.accessToken);
     }
 
     return false;
@@ -124,20 +130,17 @@ export const authenticateRequest = (
     (handler: (req: IncomingMessage, res: ServerResponse, context: object) => any) =>
         async (req: IncomingMessage, res: ServerResponse) => {
 
-            const cookies = new Cookies(req, res);
-
-            const provider = cookies.get('provider');
-            const accessToken = cookies.get('accessToken');
-
-            if (provider && accessToken) {
-                const validator = validationProvider(provider);
+            const githubIdentifier = await extractGitHubIdentifier(req, res);
+            if (githubIdentifier !== undefined) {
+                const validator = validationProvider(githubIdentifier.provider);
                 if (validator) {
-                    const validationResult = await validator(accessToken);
+                    const validationResult = await validator(githubIdentifier.accessToken);
                     if (validationResult) {
                         eventInterceptor(validationResult);
                         return handler(req, res, validationResult);
                     }
                 }
             }
+
             return redirect(res, 302, loginRedirect);
         };

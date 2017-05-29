@@ -1,23 +1,17 @@
 variables:
-  REGISTRY: 10.0.0.75:5043/v2
   PROJECT_GROUP: waterchat
   PROJECT_NAME: micro-auth
 
 stages:
   - build
   - test
-  - clean
-  - deploy
 
 build:
-  image: docker:latest
   stage: build
   script:
-    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY
-    - docker build -t $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME .
-    - docker push $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME
+    - docker build -t $PROJECT_GROUP/$PROJECT_NAME .
   tags:
-    - docker
+    - shell
 
 test:
   image: kkarczmarczyk/node-yarn
@@ -27,22 +21,3 @@ test:
     - yarn test
   tags:
     - docker
-  allow_failure: true
-
-clean:
-  stage: clean
-  script:
-    - docker stop $PROJECT_GROUP/$PROJECT_NAME
-    - docker rm $PROJECT_GROUP/$PROJECT_NAME
-  tags:
-    - shell
-  allow_failure: true
-
-deploy:
-  stage: deploy
-  script:
-    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY
-    - docker pull $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME
-    - docker run -d -p 3000:3000 --restart=always $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME --name=$PROJECT_GROUP/$PROJECT_NAME
-  tags:
-    - shell

@@ -1,9 +1,9 @@
 import { send, json } from 'micro';
 import { IncomingMessage, ServerResponse } from 'http';
-import { validateToken } from '../../authentication/github';
-import { userState, dispatchUserEvent, initEventStoreConnection } from '../../persistence/eventStore';
-import { GitHubUserIdentifier } from '../../model/User';
-import { USER_TOKEN_VALIDATED } from '../../events/UserEvents';
+import { validateToken } from '../authentication/github';
+import { userState, dispatchUserEvent, initEventStoreConnection } from '../persistence/eventStore';
+import { GitHubUserIdentifier } from '../model/User';
+import { USER_TOKEN_VALIDATED } from '../events/UserEvents';
 
 const sessions: string[] = [];
 

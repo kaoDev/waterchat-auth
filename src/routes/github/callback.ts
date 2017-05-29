@@ -1,14 +1,14 @@
 import { send } from 'micro';
 import { IncomingMessage, ServerResponse } from 'http';
 import { GitHubOauthUnScopedResult, GitHubAuthenticationRequestHandler } from 'microauth';
-import { initEventStoreConnection, dispatchUserEvent, userState } from '../../../persistence/eventStore';
+import { initEventStoreConnection, dispatchUserEvent, userState } from '../../persistence/eventStore';
 import * as uuid from 'uuid';
-import { UserRegistered, USER_REGISTERED, USER_LOGGED_IN } from '../../../events/UserEvents';
+import { UserRegistered, USER_REGISTERED, USER_LOGGED_IN } from '../../events/UserEvents';
 import * as url from 'url';
 import * as querystring from 'querystring';
 import { getAuthSessions, removeAuthSession } from './index';
-import { getUserInfo, githubLogin } from '../../../authentication/github';
-import { generateSession } from '../../../logic/SessionFunctions';
+import { getUserInfo, githubLogin } from '../../authentication/github';
+import { generateSession } from '../../logic/SessionFunctions';
 import * as redirect from 'micro-redirect';
 
 export const GET: GitHubAuthenticationRequestHandler = async (
