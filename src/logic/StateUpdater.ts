@@ -14,9 +14,12 @@ import {
 import {
     State
 } from '../model/State';
+import { Session } from '../model/Session'
+import { addMonths, format } from 'date-fns';
 
 export const initialState: State = Object.freeze({
-    users: []
+    users: [],
+    sessions: {}
 });
 
 const createStateWithChangedProfile = ({ users: oldUsers, ...rest }: State) => ({ userId, displayName }: UserProfileChanged): State => {
@@ -37,22 +40,13 @@ const createStateWithChangedProfile = ({ users: oldUsers, ...rest }: State) => (
     });
 };
 
-const createStateWithUserLoggedOut = ({ users: oldUsers, ...rest }: State) => ({ userId }: UserLoggedOut): State => {
-    const users = oldUsers.map(user => {
-        if (user.userId === userId) {
-            return Object.freeze({
-                ...user,
-                token: '',
-                algorithm: ''
-            });
-        } else {
-            return user;
-        }
-    });
+const createStateWithUserLoggedOut = ({ sessions: oldSessions, ...rest }: State) => ({ sessionId }: UserLoggedOut): State => {
+    const sessions = { ...oldSessions };
+    delete sessions[sessionId];
 
     return Object.freeze({
         ...rest,
-        users
+        sessions
     });
 };
 
@@ -86,8 +80,7 @@ const createStateWithUpdatedValidationUser = ({ users: oldUsers, ...rest }: Stat
                         }
                     ]
                 };
-            }
-            else {
+            } else {
                 return u;
             }
         });
@@ -98,28 +91,51 @@ const createStateWithUpdatedValidationUser = ({ users: oldUsers, ...rest }: Stat
         });
     };
 
-const createStateWithLoggedInUser = ({ users: oldUsers, ...rest }: State) =>
-    ({ type, rawInfo, identifiers, ...userData }: UserLoggedIn): State => {
 
-        const users = oldUsers.map(u => {
-            if (u.userId === userData.userId) {
-                return {
-                    ...u,
-                    identifiers: [
-                        ...u.identifiers,
-                        ...identifiers
-                    ]
-                };
-            }
-            else {
-                return u;
-            }
-        });
+const createStateWithLoggedInUser = ({ users: oldUsers, sessions: oldSessions, ...rest }: State) =>
+    ({ type, rawInfo, identifiers, sessionId, ...userData }: UserLoggedIn): State => {
+        const loggedInUser = oldUsers.find(u => u.userId === userData.userId);
 
-        return Object.freeze({
-            ...rest,
-            users
-        });
+        if (loggedInUser) {
+
+            const newUserData = {
+                ...loggedInUser,
+                identifiers: [
+                    ...loggedInUser.identifiers,
+                    ...identifiers
+                ]
+            };
+
+            const sessions: { [sessionId: string]: Session } = {
+                ...oldSessions
+            };
+
+            sessions[sessionId] = Object.freeze({
+                dueDate: format(addMonths(new Date(), 3)),
+                user: newUserData,
+                id: sessionId
+            });
+
+            const users = oldUsers.map(u => {
+                if (u.userId === userData.userId) {
+                    return newUserData;
+                } else {
+                    return u;
+                }
+            });
+
+            return Object.freeze({
+                ...rest,
+                sessions,
+                users
+            });
+        } else {
+            return Object.freeze({
+                ...rest,
+                sessions: oldSessions,
+                users: oldUsers
+            })
+        }
     };
 
 export const updateUserState = (state: State = initialState) => (event: UserEvent): State => {

@@ -19,6 +19,10 @@ export type GitHubUserIdentifier = {
     readonly timestamp: number
 };
 
+export type SessionId = {
+    readonly sessionId: string;
+};
+
 export type UserIdentifier = {
     readonly identifiers: GitHubUserIdentifier[]
 };

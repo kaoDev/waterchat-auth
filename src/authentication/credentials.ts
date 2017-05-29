@@ -34,12 +34,10 @@ export const loadCredentials = async ({ provider }: { provider: string }) => {
 
         if (credentials) {
             return credentials;
-        }
-        else {
+        } else {
             console.warn(`could not read credentials for the provider ${provider}`);
         }
-    }
-    catch (e) {
+    } catch (e) {
         console.error(e);
         console.warn(`the ".credentials.json" file could not be found, you are working with dummy data
                 make sure to have your credentials available in the working directory`);

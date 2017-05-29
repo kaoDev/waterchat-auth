@@ -6,12 +6,16 @@ import * as uuid from 'uuid';
 import { UserRegistered, USER_REGISTERED, USER_LOGGED_IN } from '../../../events/UserEvents';
 import * as url from 'url';
 import * as querystring from 'querystring';
-import { getSessionIds, removeSessionId } from './index';
+import { getAuthSessions, removeAuthSession } from './index';
 import { getUserInfo, githubLogin } from '../../../authentication/github';
-import * as Cookies from 'cookies';
+import { generateSession } from '../../../logic/SessionFunctions';
 import * as redirect from 'micro-redirect';
 
-export const GET: GitHubAuthenticationRequestHandler = async (req: IncomingMessage, res: ServerResponse, auth) => {
+export const GET: GitHubAuthenticationRequestHandler = async (
+    req: IncomingMessage,
+    res: ServerResponse,
+    auth
+) => {
     if (req.url === undefined) {
         return send(res, 403);
     }
@@ -19,11 +23,14 @@ export const GET: GitHubAuthenticationRequestHandler = async (req: IncomingMessa
     const { query } = url.parse(req.url);
 
     const { state, code } = querystring.parse(query);
-    if (!getSessionIds().includes(state)) {
+
+    if (!getAuthSessions()[state] === undefined) {
         return send(res, 403);
     }
 
-    removeSessionId(state);
+    const callback = getAuthSessions()[state];
+
+    removeAuthSession(state);
 
     const response = await githubLogin(code);
     if (response.error) {
@@ -34,20 +41,16 @@ export const GET: GitHubAuthenticationRequestHandler = async (req: IncomingMessa
     const user: GitHubOauthUnScopedResult = await getUserInfo(accessToken);
     const provider = 'github';
 
-    const cookies = new Cookies(req, res);
-
-    cookies.set('provider', provider);
-    cookies.set('accessToken', accessToken);
-
-    const userObjectFromState = await userState
+    const serviceState = await userState
         .take(1)
-        .map(lastUserState => {
-            return lastUserState
-                .users
-                .find(u => u.identifiers
-                    .some(i => i.provider === provider && i.id === user.id));
-        })
         .toPromise();
+
+    const userSessionId = generateSession(req, res, serviceState);
+
+    const userObjectFromState = serviceState
+        .users
+        .find(u => u.identifiers
+            .some(i => i.provider === provider && i.id === user.id));
 
     if (userObjectFromState !== undefined) {
         dispatchUserEvent({
@@ -59,10 +62,10 @@ export const GET: GitHubAuthenticationRequestHandler = async (req: IncomingMessa
                 id: user.id,
                 provider,
                 timestamp: Date.now()
-            }]
+            }],
+            sessionId: userSessionId
         });
-    }
-    else {
+    } else {
         const userRegisteredEvent: UserRegistered = {
             userId: uuid.v4(),
             displayName: user.name,
@@ -73,12 +76,13 @@ export const GET: GitHubAuthenticationRequestHandler = async (req: IncomingMessa
                 id: user.id,
                 provider,
                 timestamp: Date.now()
-            }]
+            }],
+            sessionId: userSessionId
         };
 
         await initEventStoreConnection();
         await dispatchUserEvent(userRegisteredEvent);
     }
 
-    return redirect(res, 302, '/protected');
+    return redirect(res, 302, callback);
 };

@@ -2,7 +2,8 @@ import {
     UserId,
     UserDisplayName,
     OAuthRaw,
-    UserIdentifier
+    UserIdentifier,
+    SessionId
 } from '../model/User';
 import {
     ValidationResult
@@ -23,6 +24,7 @@ export type UserRegistered = UserId &
     UserIdentifier &
     UserDisplayName &
     OAuthRaw &
+    SessionId &
     {
         readonly type: typeof USER_REGISTERED;
     };
@@ -30,24 +32,29 @@ export type UserRegistered = UserId &
 export type UserProfileChanged = UserId &
     Partial<UserDisplayName> &
     {
-        readonly type: typeof USER_PROFILE_CHANGED
+        readonly type: typeof USER_PROFILE_CHANGED;
     };
 
 export type UserLoggedIn = UserId &
     OAuthRaw &
     UserIdentifier &
+    SessionId &
     {
-        readonly type: typeof USER_LOGGED_IN
+        readonly type: typeof USER_LOGGED_IN;
     };
 
-export type UserLoggedOut = UserId & {
-    readonly type: typeof USER_LOGGED_OUT;
-};
+export type UserLoggedOut = UserId &
+    SessionId &
+    {
+        readonly type: typeof USER_LOGGED_OUT;
+    };
 
-export type UserTokenValidated = UserId & ValidationResult & {
-    readonly provider: 'github';
-    readonly type: typeof USER_TOKEN_VALIDATED
-};
+export type UserTokenValidated = UserId &
+    ValidationResult &
+    {
+        readonly provider: 'github';
+        readonly type: typeof USER_TOKEN_VALIDATED;
+    };
 
 export type UserEvent =
     UserRegistered
