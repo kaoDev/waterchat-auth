@@ -8,13 +8,6 @@ stages:
   - test
   - clean
   - deploy
-  
-build:
-  stage: build
-  script:
-    - docker build -t $DEPLOYMENT_IMAGE .
-  tags:
-    - shell
 
 build:
   image: docker:latest
