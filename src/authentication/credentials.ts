@@ -27,7 +27,37 @@ const dummyCredentials = {
     scope: 'O_AUTH_REQUESTED_SCOPE'
 };
 
+const getEnvCredentials = (provider: string) => {
+    const idVar = `${provider.toUpperCase()}_ID`;
+    const secretVar = `${provider.toUpperCase()}_SECRET`;
+    const callbackVar = `${provider.toUpperCase()}_CALLBACK`;
+
+    const clientId = process.env[idVar] as string | undefined;
+    const clientSecret = process.env[secretVar] as string | undefined;
+    const callbackUrl = process.env[callbackVar] as string | undefined;
+    const scope = '';
+
+    if (clientId !== undefined &&
+        clientSecret !== undefined &&
+        callbackUrl !== undefined) {
+        return {
+            clientId,
+            clientSecret,
+            callbackUrl,
+            scope
+        };
+    } else {
+        return dummyCredentials;
+    }
+}
+
 export const loadCredentials = async ({ provider }: { provider: string }) => {
+    const potentialEnvCredentials = getEnvCredentials(provider);
+
+    if (potentialEnvCredentials !== dummyCredentials) {
+        return potentialEnvCredentials;
+    }
+
     try {
         const credentialDictionary = await readCredentialsAsync();
         const credentials = credentialDictionary[provider];
@@ -35,12 +65,12 @@ export const loadCredentials = async ({ provider }: { provider: string }) => {
         if (credentials) {
             return credentials;
         } else {
-            console.warn(`could not read credentials for the provider ${provider}`);
+            console.warn(`could not read credentials for the provider ${provider} `);
         }
     } catch (e) {
         console.error(e);
-        console.warn(`the ".credentials.json" file could not be found, you are working with dummy data
-                make sure to have your credentials available in the working directory`);
+        console.warn(`no env vars and the ".credentials.json" file could not be found, you are working with dummy data
+make sure to have your credentials available in the working directory`);
     }
 
     return dummyCredentials;
