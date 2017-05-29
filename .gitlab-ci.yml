@@ -13,6 +13,8 @@ test:
     - yarn install
   script:
     - yarn test
+  tags:
+    - docker
 
 build:
   image: docker:latest
@@ -21,6 +23,8 @@ build:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
     - docker build -t $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> .
     - docker push $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  tags:
+    - docker
 
 deploy:
   stage: deploy
@@ -28,3 +32,5 @@ deploy:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
     - docker pull $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
     - docker run -d -p 3000:3000 --restart=always $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  tags:
+    - shell
