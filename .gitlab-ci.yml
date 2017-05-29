@@ -1,6 +1,7 @@
 variables:
-  DEPLOYMENT_IMAGE: waterchat-micro-auth-image
-  DEPLOYMENT_CONTAINER: waterchat-micro-auth
+  REGISTRY: 10.0.0.75:5043/v2
+  PROJECT_GROUP: waterchat
+  PROJECT_NAME: micro-auth
 
 stages:
   - build
@@ -11,15 +12,27 @@ stages:
 build:
   stage: build
   script:
-    - whoami
     - docker build -t $DEPLOYMENT_IMAGE .
   tags:
     - shell
 
+build:
+  image: docker:latest
+  stage: build
+  script:
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY
+    - docker build -t $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME .
+    - docker push $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME
+  only:
+    - production
+  tags:
+    - docker
+
 test:
-  image: $DEPLOYMENT_IMAGE
+  image: kkarczmarczyk/node-yarn
   stage: test
   script:
+    - yarn install
     - yarn test
   tags:
     - docker
@@ -28,8 +41,8 @@ test:
 clean:
   stage: clean
   script:
-    - docker stop $DEPLOYMENT_CONTAINER
-    - docker rm $DEPLOYMENT_CONTAINER
+    - docker stop $PROJECT_GROUP/$PROJECT_NAME
+    - docker rm $PROJECT_GROUP/$PROJECT_NAME
   tags:
     - shell
   allow_failure: true
@@ -37,7 +50,8 @@ clean:
 deploy:
   stage: deploy
   script:
-    - docker run -d -p 3000:3000 --restart=always $DEPLOYMENT_IMAGE --name=$DEPLOYMENT_CONTAINER
-    - docker exec -it $DEPLOYMENT_CONTAINER yarn start
+    - docker login -u $DOCKER_REGISTRY_USER -p $DOCKER_REGISTRY_PASSWORD $REGISTRY
+    - docker pull $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME
+    - docker run -d -p 3000:3000 --restart=always $REGISTRY/$PROJECT_GROUP/$PROJECT_NAME --name=$PROJECT_GROUP/$PROJECT_NAME
   tags:
     - shell
