@@ -14,5 +14,3 @@ RUN yarn install
 COPY . /usr/src/micro-auth
 
 EXPOSE 3000
-
-CMD [ "yarn", "start" ]

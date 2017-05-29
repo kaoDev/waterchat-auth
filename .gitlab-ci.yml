@@ -1,36 +1,38 @@
 variables:
-  REGISTRY: https://office.cap3.de:52203
+  REGISTRY: 10.0.0.75:5000
+  DEPLOYMENT_CONTAINER: waterchat-micro-auth
 
 stages:
-  - test
   - build
+  - test
   - deploy
-test:
-  image: library/node:latest
-  stage: test
-  before_script:
-    - npm install yarn
-    - yarn install
-  script:
-    - yarn test
-  tags:
-    - docker
-
+  
 build:
   image: docker:latest
   stage: build
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker login $REGISTRY
     - docker build -t $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> .
     - docker push $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  tags:
+    - docker
+
+test:
+  image: $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  stage: test
+  script:
+    - yarn test
   tags:
     - docker
 
 deploy:
   stage: deploy
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker login $REGISTRY
     - docker pull $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
-    - docker run -d -p 3000:3000 --restart=always $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+    - docker stop $DEPLOYMENT_CONTAINER
+    - docker rm $DEPLOYMENT_CONTAINER
+    - docker run -d -p 3000:3000 --restart=always $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> --name=$DEPLOYMENT_CONTAINER
+    - docker exec -it $DEPLOYMENT_CONTAINER yarn start
   tags:
     - shell
