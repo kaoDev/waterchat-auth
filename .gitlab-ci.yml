@@ -1,15 +1,26 @@
-image: library/node:latest
+variables:
+  REGISTRY: 10.0.0.22:4567
 
-cache:
-  paths:
-  - node_modules/
-
-before_script:
-- npm install npm@5
-- npm install
-
+stages:
+  - test
+  - build
+  - deploy
 test:
-  type: test
+  image: library/node:latest
+  stage: test
+  before_script:
+    - npm install yarn
+    - yarn install
   script:
-   - npm build
-   - npm test
+    - yarn test
+build:
+  image: docker:latest
+  stage: build
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker build -t $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> .
+    - docker push $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  only:
+    - production
+  tags:
+    - docker
