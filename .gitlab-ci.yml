@@ -1,11 +1,14 @@
 image: library/node:latest
 
+cache:
+  paths:
+  - node_modules/
+
 before_script:
 - npm install
 
-test_async:
+test:
   type: test
   script:
    - npm build
    - npm test
-
