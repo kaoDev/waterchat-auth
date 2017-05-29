@@ -1,4 +1,5 @@
 variables:
+  DEPLOYMENT_IMAGE: waterchat-micro-auth-image
   DEPLOYMENT_CONTAINER: waterchat-micro-auth
 
 stages:
@@ -9,12 +10,12 @@ stages:
 build:
   stage: build
   script:
-    - docker build -t <PROJECT-NAME> .
+    - docker build -t $DEPLOYMENT_IMAGE .
   tags:
     - shell
 
 test:
-  image: <PROJECT-NAME>
+  image: $DEPLOYMENT_IMAGE
   stage: test
   script:
     - yarn test
@@ -26,7 +27,7 @@ deploy:
   script:
     - docker stop $DEPLOYMENT_CONTAINER
     - docker rm $DEPLOYMENT_CONTAINER
-    - docker run -d -p 3000:3000 --restart=always <PROJECT-NAME> --name=$DEPLOYMENT_CONTAINER
+    - docker run -d -p 3000:3000 --restart=always $DEPLOYMENT_IMAGE --name=$DEPLOYMENT_CONTAINER
     - docker exec -it $DEPLOYMENT_CONTAINER yarn start
   tags:
     - shell
