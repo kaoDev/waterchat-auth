@@ -13,6 +13,7 @@ test:
     - yarn install
   script:
     - yarn test
+
 build:
   image: docker:latest
   stage: build
@@ -20,7 +21,10 @@ build:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
     - docker build -t $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> .
     - docker push $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
-  only:
-    - production
-  tags:
-    - docker
+
+deploy:
+  stage: deploy
+  script:
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $REGISTRY
+    - docker pull $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+    - docker run -d -p 3000:3000 --restart=always $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
