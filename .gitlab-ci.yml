@@ -1,5 +1,4 @@
 variables:
-  REGISTRY: 10.0.0.75:5000
   DEPLOYMENT_CONTAINER: waterchat-micro-auth
 
 stages:
@@ -8,17 +7,14 @@ stages:
   - deploy
   
 build:
-  image: docker:latest
   stage: build
   script:
-    - docker login $REGISTRY
-    - docker build -t $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> .
-    - docker push $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+    - docker build -t <PROJECT-NAME> .
   tags:
-    - docker
+    - shell
 
 test:
-  image: $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
+  image: <PROJECT-NAME>
   stage: test
   script:
     - yarn test
@@ -28,11 +24,9 @@ test:
 deploy:
   stage: deploy
   script:
-    - docker login $REGISTRY
-    - docker pull $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME>
     - docker stop $DEPLOYMENT_CONTAINER
     - docker rm $DEPLOYMENT_CONTAINER
-    - docker run -d -p 3000:3000 --restart=always $REGISTRY/<PROJECT-GROUP>/<PROJECT-NAME> --name=$DEPLOYMENT_CONTAINER
+    - docker run -d -p 3000:3000 --restart=always <PROJECT-NAME> --name=$DEPLOYMENT_CONTAINER
     - docker exec -it $DEPLOYMENT_CONTAINER yarn start
   tags:
     - shell
