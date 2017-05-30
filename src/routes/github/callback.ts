@@ -84,5 +84,5 @@ export const GET: GitHubAuthenticationRequestHandler = async (
         await dispatchUserEvent(userRegisteredEvent);
     }
 
-    return redirect(res, 302, callback);
+    return redirect(res, 302, `${callback}?sessionId=§{userSessionId}`);
 };
