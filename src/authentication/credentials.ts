@@ -6,7 +6,7 @@ function readCredentialsAsync(): Promise<{ [provider: string]: ProviderCredentia
     return new Promise((resolve, reject) => {
         fs.readFile(fileName, 'utf8', (err, data) => {
             if (err) {
-                throw err;
+                reject(err);
             }
             resolve(JSON.parse(data));
         });
