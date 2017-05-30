@@ -9,9 +9,9 @@ const match = fsRouter(__dirname + '/routes');
 
 module.exports = async function (req: IncomingMessage, res: ServerResponse) {
 
-    console.log('next connect to event store');
     await initEventStoreConnection();
-    console.log('connected');
+
+    console.log('incoming request', req.url);
 
     const matched = match(req);
 
