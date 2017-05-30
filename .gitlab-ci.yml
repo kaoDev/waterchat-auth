@@ -10,7 +10,7 @@ stages:
 build:
   stage: build
   script:
-    - docker build -t $PROJECT_GROUP/$PROJECT_NAME .
+    - docker build --build-arg GITHUB_CALLBACK=$GITHUB_CALLBACK --build-arg GITHUB_ID=$GITHUB_ID --build-arg GITHUB_SECRET=$GITHUB_SECRET -t $PROJECT_GROUP/$PROJECT_NAME .
   tags:
     - shell
 
