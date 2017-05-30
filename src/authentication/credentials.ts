@@ -6,7 +6,11 @@ function readCredentialsAsync(): Promise<{ [provider: string]: ProviderCredentia
     return new Promise((resolve, reject) => {
         fs.readFile(fileName, 'utf8', (err, data) => {
             if (err) {
-                reject(err);
+
+                console.warn(err);
+                console.warn(`no env vars and the ".credentials.json" file could not be found, you are working with dummy data
+                                make sure to have your credentials available in the working directory`);
+                resolve({});
             }
             resolve(JSON.parse(data));
         });
@@ -37,6 +41,8 @@ const getEnvCredentials = (provider: string) => {
     const callbackUrl = process.env[callbackVar] as string | undefined;
     const scope = '';
 
+    console.log('PROCESS ENV', process.env);
+
     if (clientId !== undefined &&
         clientSecret !== undefined &&
         callbackUrl !== undefined) {
@@ -58,19 +64,13 @@ export const loadCredentials = async ({ provider }: { provider: string }) => {
         return potentialEnvCredentials;
     }
 
-    try {
-        const credentialDictionary = await readCredentialsAsync();
-        const credentials = credentialDictionary[provider];
+    const credentialDictionary = await readCredentialsAsync();
+    const credentials = credentialDictionary[provider];
 
-        if (credentials) {
-            return credentials;
-        } else {
-            console.warn(`could not read credentials for the provider ${provider} `);
-        }
-    } catch (e) {
-        console.error(e);
-        console.warn(`no env vars and the ".credentials.json" file could not be found, you are working with dummy data
-make sure to have your credentials available in the working directory`);
+    if (credentials) {
+        return credentials;
+    } else {
+        console.warn(`could not read credentials for the provider ${provider} `);
     }
 
     return dummyCredentials;
