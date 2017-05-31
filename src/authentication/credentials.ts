@@ -41,8 +41,6 @@ const getEnvCredentials = (provider: string) => {
     const callbackUrl = process.env[callbackVar] as string | undefined;
     const scope = '';
 
-    console.log('PROCESS ENV', process.env);
-
     if (clientId !== undefined &&
         clientSecret !== undefined &&
         callbackUrl !== undefined) {
