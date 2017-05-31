@@ -27,7 +27,7 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
 
     const { query } = url.parse(req.url);
 
-    const callback: string = querystring.parse(query).callback || 'https://waterchat.cap3.de';
+    const callback: string = querystring.parse(query).callback || 'http://office.cap3.de:57580/auth/protected';
 
     console.log('auth request with callback', callback);
 
