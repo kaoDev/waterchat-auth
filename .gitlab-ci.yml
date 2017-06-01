@@ -3,20 +3,19 @@ variables:
   PROJECT_NAME: micro-auth
 
 stages:
-  - test
-  - build
+  - buildandtest
   - deploy
 
 build:
-  stage: build
+  stage: buildandtest
   script:
-    - docker build --build-arg GITHUB_CALLBACK=$GITHUB_CALLBACK --build-arg GITHUB_ID=$GITHUB_ID --build-arg GITHUB_SECRET=$GITHUB_SECRET -t $PROJECT_GROUP/$PROJECT_NAME .
+    - docker build -t $PROJECT_GROUP/$PROJECT_NAME:latest -t $PROJECT_GROUP/$PROJECT_NAME:CI_JOB_ID .
   tags:
     - shell
 
 test:
   image: kkarczmarczyk/node-yarn
-  stage: test
+  stage: buildandtest
   script:
     - yarn install
     - yarn test

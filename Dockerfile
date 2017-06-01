@@ -1,15 +1,6 @@
-FROM node:7.10
+FROM node:8-alpine
 
 RUN npm install yarn
-
-# ENV vars
-ARG GITHUB_CALLBACK
-ARG GITHUB_ID
-ARG GITHUB_SECRET
-
-ENV GITHUB_CALLBACK ${GITHUB_CALLBACK}
-ENV GITHUB_ID ${GITHUB_ID}
-ENV GITHUB_SECRET ${GITHUB_SECRET}
 
 # Create app directory
 RUN mkdir -p /usr/src/micro-auth
