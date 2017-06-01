@@ -37,7 +37,12 @@ export const githubLogin = async (code: string) => {
         code
     });
     if (response !== undefined) {
-        return response.json<GitHubLoginResult>().catch(e => console.error(e));
+        return response.json<GitHubLoginResult>().catch(async e => {
+            const text = await response.text();
+
+            console.error(e, text, response.body);
+
+        });
     }
 };
 
