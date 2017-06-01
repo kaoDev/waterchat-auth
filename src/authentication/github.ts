@@ -14,7 +14,7 @@ export const githubLogin = async (code: string) => {
     const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
     return rp({
         method: 'POST',
-        url: 'https://github.com/login/oauth/access_token',
+        uri: 'https://github.com/login/oauth/access_token',
         json: true,
         body: {
             client_id: clientId,
@@ -27,7 +27,7 @@ export const githubLogin = async (code: string) => {
 export const getUserInfo = (accessToken: string) => {
     return rp({
         method: 'GET',
-        url: 'https://api.github.com/user',
+        uri: 'https://api.github.com/user',
         headers: {
             Authorization: `token ${accessToken}`,
             'User-Agent': 'Microauth-Github'
@@ -84,7 +84,7 @@ export const validateToken = async (accessToken: string): Promise<ValidationResu
     try {
         const validationResult: ValidationResult | NotFoundMessage = await rp({
             method: 'GET',
-            url: `https://api.github.com/applications/${clientId}/tokens/${accessToken}`,
+            uri: `https://api.github.com/applications/${clientId}/tokens/${accessToken}`,
             json: true,
             headers: {
                 'User-Agent': clientId,
