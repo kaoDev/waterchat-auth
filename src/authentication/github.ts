@@ -3,7 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import * as redirect from 'micro-redirect';
 import { getSession } from '../logic/SessionFunctions';
 import { userState } from '../persistence/eventStore';
-import fetch from 'node-fetch';
+import * as rp from 'request-promise';
 
 export const getRedirectUrl = async (state: string) => {
     const { clientId, callbackUrl, scope } = await loadCredentials({ provider: 'github' });
@@ -11,13 +11,12 @@ export const getRedirectUrl = async (state: string) => {
 };
 
 const postJson = (url: string, data: object) => {
-    return fetch(url, {
+    return rp({
         method: 'POST',
-        body: JSON.stringify(data)
-    })
-        .catch(e => {
-            console.error(e);
-        });
+        uri: url,
+        json: true,
+        body: data
+    });
 };
 
 export type GitHubLoginResult = {
@@ -36,30 +35,21 @@ export const githubLogin = async (code: string) => {
         client_secret: clientSecret,
         code
     });
-    if (response !== undefined) {
-        return response.json<GitHubLoginResult>().catch(async e => {
-            const text = await response.text();
 
-            console.error(e, text, response.body);
-
-        });
-    }
+    return response as GitHubLoginResult;
 };
 
 export const getUserInfo = async (accessToken: string) => {
     console.log('github getUserInfo')
-    const response = await fetch('https://api.github.com/user', {
+    return rp({
         method: 'GET',
+        uri: 'https://api.github.com/user',
         headers: {
             Authorization: `token ${accessToken}`,
             'User-Agent': 'Microauth-Github'
-        }
+        },
+        json: true
     });
-
-    return response.json()
-        .catch(e => {
-            console.error(e);
-        });
 };
 
 export type ValidationResult = {
