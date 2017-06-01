@@ -29,6 +29,7 @@ export type GitHubLoginResult = {
     };
 
 export const githubLogin = async (code: string) => {
+    console.log('githubLogin');
     const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
     const response = await postJson('https://github.com/login/oauth/access_token', {
         client_id: clientId,
@@ -36,11 +37,12 @@ export const githubLogin = async (code: string) => {
         code
     });
     if (response !== undefined) {
-        return response.json<GitHubLoginResult>();
+        return response.json<GitHubLoginResult>().catch(e => console.error(e));
     }
 };
 
 export const getUserInfo = async (accessToken: string) => {
+    console.log('github getUserInfo')
     const response = await fetch('https://api.github.com/user', {
         method: 'GET',
         headers: {
@@ -99,6 +101,7 @@ type NotFoundMessage = {
 };
 
 export const validateToken = async (accessToken: string): Promise<ValidationResult | false> => {
+    console.log('github validate token');
     const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
     try {
         const response = await fetch(`https://api.github.com/applications/${clientId}/tokens/${accessToken}`, {
@@ -109,9 +112,9 @@ export const validateToken = async (accessToken: string): Promise<ValidationResu
             }
         });
 
-        const validationResult: ValidationResult | NotFoundMessage = await response.json();
+        const validationResult: ValidationResult | NotFoundMessage | undefined = await response.json().catch(e => console.error(e));
 
-        if ((validationResult as NotFoundMessage).message) {
+        if (validationResult === undefined || (validationResult as NotFoundMessage).message) {
             return false;
         }
 
