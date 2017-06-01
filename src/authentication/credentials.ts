@@ -53,7 +53,7 @@ const getEnvCredentials = (provider: string) => {
     } else {
         return dummyCredentials;
     }
-}
+};
 
 export const loadCredentials = async ({ provider }: { provider: string }) => {
     const potentialEnvCredentials = getEnvCredentials(provider);
