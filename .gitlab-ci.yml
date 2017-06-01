@@ -13,14 +13,14 @@ build:
   tags:
     - shell
 
-test:
-  image: kkarczmarczyk/node-yarn
-  stage: buildandtest
-  script:
-    - yarn install
-    - yarn test
-  tags:
-    - docker
+# test:
+#   image: kkarczmarczyk/node-yarn
+#   stage: buildandtest
+#   script:
+#     - yarn install
+#     - yarn test
+#   tags:
+#     - docker
 
 trigger_build:
   stage: deploy
