@@ -9,7 +9,7 @@ stages:
 build:
   stage: buildandtest
   script:
-    - docker build -t $PROJECT_GROUP/$PROJECT_NAME:latest -t $PROJECT_GROUP/$PROJECT_NAME:CI_JOB_ID .
+    - docker build -t $PROJECT_GROUP/$PROJECT_NAME:latest -t $PROJECT_GROUP/$PROJECT_NAME:$CI_JOB_ID .
   tags:
     - shell
 
