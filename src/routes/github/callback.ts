@@ -33,56 +33,61 @@ export const GET: GitHubAuthenticationRequestHandler = async (
     removeAuthSession(state);
 
     const response = await githubLogin(code);
-    if (response.error) {
-        return send(res, 403);
+
+    if (response !== undefined) {
+        if (response.error !== undefined || response.access_token === undefined) {
+            return send(res, 403);
+        }
+
+        const accessToken = response.access_token;
+        const user: GitHubOauthUnScopedResult = await getUserInfo(accessToken);
+        const provider = 'github';
+
+        const serviceState = await userState
+            .take(1)
+            .toPromise();
+
+        const userSessionId = generateSession(req, res, serviceState);
+
+        const userObjectFromState = serviceState
+            .users
+            .find(u => u.identifiers
+                .some(i => i.provider === provider && i.id === user.id));
+
+        if (userObjectFromState !== undefined) {
+            dispatchUserEvent({
+                rawInfo: user,
+                userId: userObjectFromState.userId,
+                type: USER_LOGGED_IN,
+                identifiers: [{
+                    accessToken,
+                    id: user.id,
+                    provider,
+                    timestamp: Date.now()
+                }],
+                sessionId: userSessionId
+            });
+        } else {
+            const userRegisteredEvent: UserRegistered = {
+                userId: uuid.v4(),
+                displayName: user.name,
+                rawInfo: user,
+                type: USER_REGISTERED,
+                identifiers: [{
+                    accessToken,
+                    id: user.id,
+                    provider,
+                    timestamp: Date.now()
+                }],
+                sessionId: userSessionId
+            };
+
+            await initEventStoreConnection();
+            await dispatchUserEvent(userRegisteredEvent);
+        }
+
+        return redirect(res, 302, `${callback}?sessionId=§{userSessionId}`);
     }
 
-    const accessToken = response.access_token;
-    const user: GitHubOauthUnScopedResult = await getUserInfo(accessToken);
-    const provider = 'github';
-
-    const serviceState = await userState
-        .take(1)
-        .toPromise();
-
-    const userSessionId = generateSession(req, res, serviceState);
-
-    const userObjectFromState = serviceState
-        .users
-        .find(u => u.identifiers
-            .some(i => i.provider === provider && i.id === user.id));
-
-    if (userObjectFromState !== undefined) {
-        dispatchUserEvent({
-            rawInfo: user,
-            userId: userObjectFromState.userId,
-            type: USER_LOGGED_IN,
-            identifiers: [{
-                accessToken,
-                id: user.id,
-                provider,
-                timestamp: Date.now()
-            }],
-            sessionId: userSessionId
-        });
-    } else {
-        const userRegisteredEvent: UserRegistered = {
-            userId: uuid.v4(),
-            displayName: user.name,
-            rawInfo: user,
-            type: USER_REGISTERED,
-            identifiers: [{
-                accessToken,
-                id: user.id,
-                provider,
-                timestamp: Date.now()
-            }],
-            sessionId: userSessionId
-        };
-
-        await initEventStoreConnection();
-        await dispatchUserEvent(userRegisteredEvent);
-    }
-
-    return redirect(res, 302, `${callback}?sessionId=§{userSessionId}`);
+    send(res, 500);
 };

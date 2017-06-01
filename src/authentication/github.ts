@@ -14,8 +14,19 @@ const postJson = (url: string, data: object) => {
     return fetch(url, {
         method: 'POST',
         body: JSON.stringify(data)
-    });
+    })
+        .catch(e => {
+            console.error(e);
+        });
 };
+
+export type GitHubLoginResult = {
+    error: string
+    access_token: undefined
+} | {
+        error: undefined,
+        access_token: string
+    };
 
 export const githubLogin = async (code: string) => {
     const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
@@ -24,8 +35,9 @@ export const githubLogin = async (code: string) => {
         client_secret: clientSecret,
         code
     });
-
-    return response.json();
+    if (response !== undefined) {
+        return response.json<GitHubLoginResult>();
+    }
 };
 
 export const getUserInfo = async (accessToken: string) => {
@@ -37,7 +49,10 @@ export const getUserInfo = async (accessToken: string) => {
         }
     });
 
-    return response.json();
+    return response.json()
+        .catch(e => {
+            console.error(e);
+        });
 };
 
 export type ValidationResult = {
