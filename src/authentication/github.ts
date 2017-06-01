@@ -1,39 +1,43 @@
-import * as rp from 'request-promise';
 import { loadCredentials } from './credentials';
 import { IncomingMessage, ServerResponse } from 'http';
 import * as redirect from 'micro-redirect';
 import { getSession } from '../logic/SessionFunctions';
 import { userState } from '../persistence/eventStore';
+import fetch from 'node-fetch';
 
 export const getRedirectUrl = async (state: string) => {
     const { clientId, callbackUrl, scope } = await loadCredentials({ provider: 'github' });
     return `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${callbackUrl}&scope=${scope}&state=${state}`;
 };
 
-export const githubLogin = async (code: string) => {
-    const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
-    return rp({
+const postJson = (url: string, data: object) => {
+    return fetch(url, {
         method: 'POST',
-        uri: 'https://github.com/login/oauth/access_token',
-        json: true,
-        body: {
-            client_id: clientId,
-            client_secret: clientSecret,
-            code
-        }
+        body: JSON.stringify(data)
     });
 };
 
-export const getUserInfo = (accessToken: string) => {
-    return rp({
+export const githubLogin = async (code: string) => {
+    const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
+    const response = await postJson('https://github.com/login/oauth/access_token', {
+        client_id: clientId,
+        client_secret: clientSecret,
+        code
+    });
+
+    return response.json();
+};
+
+export const getUserInfo = async (accessToken: string) => {
+    const response = await fetch('https://api.github.com/user', {
         method: 'GET',
-        uri: 'https://api.github.com/user',
         headers: {
             Authorization: `token ${accessToken}`,
             'User-Agent': 'Microauth-Github'
-        },
-        json: true
+        }
     });
+
+    return response.json();
 };
 
 export type ValidationResult = {
@@ -82,15 +86,15 @@ type NotFoundMessage = {
 export const validateToken = async (accessToken: string): Promise<ValidationResult | false> => {
     const { clientId, clientSecret } = await loadCredentials({ provider: 'github' });
     try {
-        const validationResult: ValidationResult | NotFoundMessage = await rp({
+        const response = await fetch(`https://api.github.com/applications/${clientId}/tokens/${accessToken}`, {
             method: 'GET',
-            uri: `https://api.github.com/applications/${clientId}/tokens/${accessToken}`,
-            json: true,
             headers: {
                 'User-Agent': clientId,
                 Authorization: `Basic ${new Buffer(`${clientId}:${clientSecret}`).toString('base64')}`
             }
         });
+
+        const validationResult: ValidationResult | NotFoundMessage = await response.json();
 
         if ((validationResult as NotFoundMessage).message) {
             return false;
