@@ -8,6 +8,6 @@ const authProvider = (p: string) => {
 };
 
 
-export const GET = authenticateRequest('/github', authProvider, () => undefined)((req: IncomingMessage, res: ServerResponse, context: object) => {
+export const GET = authenticateRequest('/auth/github', authProvider, () => undefined)((req: IncomingMessage, res: ServerResponse, context: object) => {
     return `YOU ARE AUTHENTICATED: ${JSON.stringify(context)}`;
 });
