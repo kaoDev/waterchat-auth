@@ -7,6 +7,8 @@ console.log('initializing micro-auth');
 
 const match = fsRouter(__dirname + '/routes');
 
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+
 module.exports = async function (req: IncomingMessage, res: ServerResponse) {
 
     await initEventStoreConnection();
