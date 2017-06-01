@@ -4,6 +4,7 @@ import * as redirect from 'micro-redirect';
 import { getSession } from '../logic/SessionFunctions';
 import { userState } from '../persistence/eventStore';
 import * as rp from 'request-promise';
+import { isBefore } from 'date-fns';
 
 export const getRedirectUrl = async (state: string) => {
     const { clientId, callbackUrl, scope } = await loadCredentials({ provider: 'github' });
@@ -128,6 +129,13 @@ export const extractGitHubIdentifier = async (req: IncomingMessage, res: ServerR
     }
 };
 
+export const userHasValidSession = async (req: IncomingMessage, res: ServerResponse) => {
+    const userAggregateState = await userState.take(1).toPromise();
+    const session = getSession(req, res, userAggregateState);
+
+    return session !== undefined && isBefore(new Date(), session.dueDate);
+};
+
 export const userHasValidCookie = async (req: IncomingMessage, res: ServerResponse) => {
     const githubIdentifier = await extractGitHubIdentifier(req, res);
     if (githubIdentifier !== undefined) {
@@ -147,7 +155,12 @@ export const authenticateRequest = (
     (handler: (req: IncomingMessage, res: ServerResponse, context: object) => any) =>
         async (req: IncomingMessage, res: ServerResponse) => {
 
+            if (userHasValidSession(req, res)) {
+                return handler(req, res, {});
+            }
+
             const githubIdentifier = await extractGitHubIdentifier(req, res);
+
             if (githubIdentifier !== undefined) {
                 const validator = validationProvider(githubIdentifier.provider);
                 if (validator) {
