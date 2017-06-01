@@ -27,4 +27,6 @@ export type UserIdentifier = {
     readonly identifiers: GitHubUserIdentifier[]
 };
 
+export type DisplayUser = UserId & UserDisplayName;
+
 export type User = UserId & UserDisplayName & UserIdentifier;

@@ -3,6 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http';
 import * as redirect from 'micro-redirect';
 import { getSession } from '../logic/SessionFunctions';
 import { userState } from '../persistence/eventStore';
+import { DisplayUser, User } from '../model/User';
 import * as rp from 'request-promise';
 import { isBefore } from 'date-fns';
 
@@ -145,6 +146,13 @@ export const userHasValidCookie = async (req: IncomingMessage, res: ServerRespon
     return false;
 };
 
+function displayUser({ userId, displayName }: User) {
+    return {
+        userId,
+        displayName
+    }
+}
+
 type ValidationProvider = (provider: string) => ((accessToken: string) => Promise<ValidationResult | false>) | undefined;
 
 export const authenticateRequest = (
@@ -152,11 +160,17 @@ export const authenticateRequest = (
     validationProvider: ValidationProvider,
     eventInterceptor: (data: ValidationResult) => void
 ) =>
-    (handler: (req: IncomingMessage, res: ServerResponse, context: object) => any) =>
+    (handler: (req: IncomingMessage, res: ServerResponse, context: DisplayUser) => any) =>
         async (req: IncomingMessage, res: ServerResponse) => {
 
-            if (userHasValidSession(req, res)) {
-                return handler(req, res, {});
+            const userAggregateState = await userState.take(1).toPromise();
+
+            const session = getSession(req, res, userAggregateState);
+            if (session !== undefined && isBefore(new Date(), session.dueDate)) {
+                const user = userAggregateState.users.find(u => u.userId === session.user.userId);
+                if (user !== undefined) {
+                    return handler(req, res, displayUser(user));
+                }
             }
 
             const githubIdentifier = await extractGitHubIdentifier(req, res);
@@ -165,9 +179,16 @@ export const authenticateRequest = (
                 const validator = validationProvider(githubIdentifier.provider);
                 if (validator) {
                     const validationResult = await validator(githubIdentifier.accessToken);
-                    if (validationResult) {
+                    if (validationResult !== false) {
                         eventInterceptor(validationResult);
-                        return handler(req, res, validationResult);
+
+                        const user = userAggregateState.users.find(u => u.identifiers.some(i =>
+                            i.accessToken === validationResult.token
+                        ));
+
+                        if (user !== undefined) {
+                            return handler(req, res, displayUser(user));
+                        }
                     }
                 }
             }

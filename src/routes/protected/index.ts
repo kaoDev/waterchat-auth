@@ -1,5 +1,6 @@
 import { IncomingMessage, ServerResponse } from 'http';
 import { authenticateRequest, validateToken } from '../../authentication/github';
+import { DisplayUser } from '../../model/User';
 
 const authProvider = (p: string) => {
     if (p === 'github') {
@@ -8,6 +9,6 @@ const authProvider = (p: string) => {
 };
 
 
-export const GET = authenticateRequest('/auth/github', authProvider, () => undefined)((req: IncomingMessage, res: ServerResponse, context: object) => {
-    return `YOU ARE AUTHENTICATED: ${JSON.stringify(context)}`;
+export const GET = authenticateRequest('/auth/github', authProvider, () => undefined)((req: IncomingMessage, res: ServerResponse, user: DisplayUser) => {
+    return `YOU ARE AUTHENTICATED: ${JSON.stringify(user)}`;
 });
