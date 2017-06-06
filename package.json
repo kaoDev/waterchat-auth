@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "start": "tsc && micro",
-    "test": "tslint . && tsc -p ./tsconfig.test.json && ava ./test.dist/**/*.js"
+    "test": "tsc -p ./tsconfig.test.json && ava ./test.dist/**/*.js"
   },
   "engines": {
     "node": ">= 6"

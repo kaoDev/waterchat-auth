@@ -1,7 +1,7 @@
-import { User } from './User';
+import { User } from './User'
 
 export type Session = {
-    readonly user: User;
-    readonly dueDate: string;
-    readonly id: string;
-};
+  readonly user: User
+  readonly dueDate: string
+  readonly id: string
+}

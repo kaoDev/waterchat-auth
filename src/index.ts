@@ -1,25 +1,24 @@
-import { IncomingMessage, ServerResponse } from 'http';
-import { send } from 'micro';
-import * as fsRouter from 'fs-router';
-import { initEventStoreConnection } from './persistence/eventStore';
+import { IncomingMessage, ServerResponse } from 'http'
+import { send } from 'micro'
+import * as fsRouter from 'fs-router'
+import { initEventStoreConnection } from './persistence/eventStore'
 
-console.log('initializing micro-auth');
+console.log('initializing micro-auth')
 
-const match = fsRouter(__dirname + '/routes');
+const match = fsRouter(__dirname + '/routes')
 
-process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 
-module.exports = async function (req: IncomingMessage, res: ServerResponse) {
+module.exports = async function(req: IncomingMessage, res: ServerResponse) {
+  await initEventStoreConnection()
 
-    await initEventStoreConnection();
+  console.log('incoming request', req.url)
 
-    console.log('incoming request', req.url);
+  const matched = match(req)
 
-    const matched = match(req);
+  if (matched) {
+    return await matched(req, res)
+  }
 
-    if (matched) {
-        return await matched(req, res);
-    }
-
-    send(res, 404, { error: 'Not found' });
-};
+  send(res, 404, { error: 'Not found' })
+}

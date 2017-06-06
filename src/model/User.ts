@@ -1,32 +1,32 @@
-import { GitHubOauthUnScopedResult } from 'microauth';
+import { GitHubOauthUnScopedResult } from 'microauth'
 
 export type UserId = {
-    readonly userId: string;
-};
+  readonly userId: string
+}
 
 export type UserDisplayName = {
-    readonly displayName: string;
-};
+  readonly displayName: string
+}
 
 export type OAuthRaw = {
-    readonly rawInfo: GitHubOauthUnScopedResult
-};
+  readonly rawInfo: GitHubOauthUnScopedResult
+}
 
 export type GitHubUserIdentifier = {
-    readonly provider: 'github',
-    readonly accessToken: string,
-    readonly id: number,
-    readonly timestamp: number
-};
+  readonly provider: 'github'
+  readonly accessToken: string
+  readonly id: number
+  readonly timestamp: number
+}
 
 export type SessionId = {
-    readonly sessionId: string;
-};
+  readonly sessionId: string
+}
 
 export type UserIdentifier = {
-    readonly identifiers: GitHubUserIdentifier[]
-};
+  readonly identifiers: GitHubUserIdentifier[]
+}
 
-export type DisplayUser = UserId & UserDisplayName;
+export type DisplayUser = UserId & UserDisplayName
 
-export type User = UserId & UserDisplayName & UserIdentifier;
+export type User = UserId & UserDisplayName & UserIdentifier
