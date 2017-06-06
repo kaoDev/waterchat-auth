@@ -27,23 +27,18 @@
     "cookies": "^0.7.0",
     "date-fns": "^1.28.5",
     "fs-router": "^0.3.0",
-    "got": "^6.7.1",
-    "micro": "^7.0.0",
-    "micro-compose": "^0.0.3",
+    "micro": "^7.3.3",
     "micro-redirect": "^1.0.0",
     "microauth-facebook": "^0.0.3",
     "microauth-github": "^0.0.4",
     "microauth-slack": "^0.0.1",
     "microauth-twitter": "^0.1.1",
-    "node-eventstore-client": "^0.1.2",
+    "node-eventstore-client": "^0.1.3",
     "querystring": "^0.2.0",
     "request-promise": "^4.2.1",
     "rxjs": "^5.4.0",
-    "test-listen": "^1.0.2",
     "tslint": "^4.5.0",
-    "tslint-config-xo": "^1.2.0",
     "typescript": "^2.3",
-    "uuid": "^3.0.1",
-    "xo": "^0.17.1"
+    "uuid": "^3.0.1"
   }
 }
