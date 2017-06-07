@@ -2,8 +2,9 @@ import { IncomingMessage, ServerResponse } from 'http'
 import * as Cookies from 'cookies'
 import { State } from '../model/State'
 import { Session } from '../model/Session'
+import { userState, initEventStoreConnection } from '../persistence/eventStore'
 import * as uuid from 'uuid'
-import { addMonths } from 'date-fns'
+import { addMonths, isAfter } from 'date-fns'
 
 const SESSION_PROP_KEY = 'watersession'
 export const MAX_SESSION_AGE_MONTHS = 3
@@ -48,4 +49,18 @@ export const generateSession = (
   })
 
   return id
+}
+
+export const isSessionValid = async (sessionId: string | undefined | null) => {
+  if (sessionId === undefined || sessionId === null || sessionId.length === 0) {
+    return false
+  } else {
+    await initEventStoreConnection()
+
+    const state = await userState.take(1).toPromise()
+
+    const session = state.sessions[sessionId]
+
+    return session !== undefined && isAfter(new Date(), session.dueDate)
+  }
 }

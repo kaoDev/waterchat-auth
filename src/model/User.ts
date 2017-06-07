@@ -30,3 +30,10 @@ export type UserIdentifier = {
 export type DisplayUser = UserId & UserDisplayName
 
 export type User = UserId & UserDisplayName & UserIdentifier
+
+export function displayUser({ userId, displayName }: User) {
+  return {
+    userId,
+    displayName,
+  }
+}

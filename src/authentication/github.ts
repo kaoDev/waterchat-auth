@@ -3,7 +3,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import * as redirect from 'micro-redirect'
 import { getSession } from '../logic/SessionFunctions'
 import { userState } from '../persistence/eventStore'
-import { DisplayUser, User } from '../model/User'
+import { DisplayUser, displayUser } from '../model/User'
 import * as rp from 'request-promise'
 import { isBefore } from 'date-fns'
 
@@ -179,13 +179,6 @@ export const userHasValidCookie = async (
   }
 
   return false
-}
-
-function displayUser({ userId, displayName }: User) {
-  return {
-    userId,
-    displayName,
-  }
 }
 
 type ValidationProvider = (
