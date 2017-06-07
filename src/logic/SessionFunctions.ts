@@ -4,7 +4,7 @@ import { State } from '../model/State'
 import { Session } from '../model/Session'
 import { userState, initEventStoreConnection } from '../persistence/eventStore'
 import * as uuid from 'uuid'
-import { addMonths, isAfter } from 'date-fns'
+import { addMonths, isBefore } from 'date-fns'
 
 const SESSION_PROP_KEY = 'watersession'
 export const MAX_SESSION_AGE_MONTHS = 3
@@ -12,7 +12,7 @@ export const MAX_SESSION_AGE_MONTHS = 3
 export const getSession = (
   req: IncomingMessage,
   res: ServerResponse,
-  state: State,
+  state: State
 ): Session | undefined => {
   const cookies = Cookies(req, res)
 
@@ -35,7 +35,7 @@ export const getSession = (
 export const generateSession = (
   req: IncomingMessage,
   res: ServerResponse,
-  state: State,
+  state: State
 ) => {
   let id = ''
   do {
@@ -61,6 +61,6 @@ export const isSessionValid = async (sessionId: string | undefined | null) => {
 
     const session = state.sessions[sessionId]
 
-    return session !== undefined && isAfter(new Date(), session.dueDate)
+    return session !== undefined && isBefore(new Date(), session.dueDate)
   }
 }
