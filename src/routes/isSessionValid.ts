@@ -16,7 +16,7 @@ const httpUnauthorized = (res: ServerResponse) => {
 
 export const GET = async (req: IncomingMessage, res: ServerResponse) => {
   try {
-    const { sessionId } = (await json(req)) as ValidateSessionPayload
+    const { sessionId } = req.headers as ValidateSessionPayload
     console.log('session validation request', sessionId)
 
     if (isSessionValid(sessionId)) {
