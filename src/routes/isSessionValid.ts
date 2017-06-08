@@ -1,4 +1,4 @@
-import { send, json } from 'micro'
+import { send } from 'micro'
 import { IncomingMessage, ServerResponse } from 'http'
 import { isSessionValid } from '../logic/SessionFunctions'
 
