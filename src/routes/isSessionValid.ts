@@ -2,10 +2,6 @@ import { send } from 'micro'
 import { IncomingMessage, ServerResponse } from 'http'
 import { isSessionValid } from '../logic/SessionFunctions'
 
-type ValidateSessionPayload = {
-  sessionId: string | undefined
-}
-
 const httpOK = (res: ServerResponse) => {
   send(res, 200)
 }
@@ -16,10 +12,15 @@ const httpUnauthorized = (res: ServerResponse) => {
 
 export const GET = async (req: IncomingMessage, res: ServerResponse) => {
   try {
-    const { sessionId } = req.headers as ValidateSessionPayload
+    console.log(req.headers)
+
+    const sessionId: string | undefined =
+      req.headers['sessionId'] ||
+      req.headers['sessionid'] ||
+      req.headers['session-id']
     console.log('session validation request', sessionId)
 
-    if (isSessionValid(sessionId)) {
+    if (await isSessionValid(sessionId)) {
       console.log('session is valid')
       httpOK(res)
     } else {
