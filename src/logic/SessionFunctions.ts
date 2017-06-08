@@ -53,6 +53,7 @@ export const generateSession = (
 
 export const isSessionValid = async (sessionId: string | undefined | null) => {
   if (sessionId === undefined || sessionId === null || sessionId.length === 0) {
+    console.log('isSessionValid', 'session id is invalid')
     return false
   } else {
     await initEventStoreConnection()
@@ -60,6 +61,8 @@ export const isSessionValid = async (sessionId: string | undefined | null) => {
     const state = await userState.take(1).toPromise()
 
     const session = state.sessions[sessionId]
+
+    console.log('session for id', sessionId, session)
 
     return session !== undefined && isBefore(new Date(), session.dueDate)
   }

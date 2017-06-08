@@ -17,10 +17,13 @@ const httpUnauthorized = (res: ServerResponse) => {
 export const GET = async (req: IncomingMessage, res: ServerResponse) => {
   try {
     const { sessionId } = (await json(req)) as ValidateSessionPayload
+    console.log('session validation request', sessionId)
 
     if (isSessionValid(sessionId)) {
+      console.log('session is valid')
       httpOK(res)
     } else {
+      console.log('session is invalid')
       httpUnauthorized(res)
     }
   } catch (err) {
