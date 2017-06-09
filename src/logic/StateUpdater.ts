@@ -13,6 +13,7 @@ import {
 } from '../events/UserEvents'
 import { State } from '../model/State'
 import { Session } from '../model/Session'
+import { User } from '../model/User'
 import { addMonths, format } from 'date-fns'
 
 export const initialState: State = Object.freeze({
@@ -57,9 +58,18 @@ const createStateWithUserLoggedOut = ({
 const createStateWithNewUser = ({ users: oldUsers, ...rest }: State) => ({
   type,
   rawInfo,
-  ...userData,
+  userId,
+  identifiers,
+  displayName,
 }: UserRegistered): State => {
-  const users = oldUsers.concat(userData)
+  const user: User = {
+    userId,
+    identifiers,
+    displayName,
+    profilePicture: rawInfo.avatar_url,
+  }
+
+  const users = oldUsers.concat(user)
 
   return Object.freeze({
     ...rest,
@@ -80,7 +90,7 @@ const createStateWithUpdatedValidationUser = ({
   const users = oldUsers.map(u => {
     if (u.userId === userData.userId) {
       const oldIdentifierIndex = u.identifiers.findIndex(
-        i => i.provider === provider,
+        i => i.provider === provider
       )
       const unchangedIdentifiers = u.identifiers.splice(oldIdentifierIndex, 1)
 
@@ -159,7 +169,7 @@ const createStateWithLoggedInUser = ({
 }
 
 export const updateUserState = (state: State = initialState) => (
-  event: UserEvent,
+  event: UserEvent
 ): State => {
   switch (event.type) {
     case USER_REGISTERED:

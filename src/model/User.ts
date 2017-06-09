@@ -8,6 +8,10 @@ export type UserDisplayName = {
   readonly displayName: string
 }
 
+export type ProfilePicture = {
+  readonly profilePicture: string
+}
+
 export type OAuthRaw = {
   readonly rawInfo: GitHubOauthUnScopedResult
 }
@@ -27,13 +31,12 @@ export type UserIdentifier = {
   readonly identifiers: GitHubUserIdentifier[]
 }
 
-export type DisplayUser = UserId & UserDisplayName
+export type DisplayUser = UserId & UserDisplayName & ProfilePicture
 
-export type User = UserId & UserDisplayName & UserIdentifier
+export type User = DisplayUser & UserIdentifier
 
-export function displayUser({ userId, displayName }: User) {
+export function displayUser({ identifiers, ...rest }: User): DisplayUser {
   return {
-    userId,
-    displayName,
+    ...rest,
   }
 }
