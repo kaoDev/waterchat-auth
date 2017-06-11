@@ -18,7 +18,7 @@ module.exports = async function(req: IncomingMessage, res: ServerResponse) {
   const matched = match(req)
 
   if (matched) {
-    return await cors()(await matched(req, res))
+    return await cors()(matched)
   }
 
   send(res, 404, { error: 'Not found' })
