@@ -13,7 +13,7 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
 module.exports = async function(req: IncomingMessage, res: ServerResponse) {
   await initEventStoreConnection()
 
-  console.log('incoming request', req.url)
+  console.log('incoming request', req.method, req.url)
 
   const matched = match(req)
 
