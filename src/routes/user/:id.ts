@@ -7,8 +7,11 @@ import { displayUser } from '../../model/User'
 export const GET = async (req: IncomingMessage, res: ServerResponse) => {
   try {
     const id = (req as any).params.id as string
+    console.log('id param', id)
 
     if (await isSessionValid(id)) {
+      console.log('is valid session')
+
       const user = await userState
         .take(1)
         .map(s => s.sessions[id].user)
@@ -23,6 +26,8 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
         .toPromise()
 
       if (user !== undefined) {
+        console.log('is valid id')
+
         send(res, 200, displayUser(user))
       } else {
         send(res, 404)
