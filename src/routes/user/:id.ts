@@ -40,5 +40,5 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
 }
 
 export const OPTIONS = async (req: IncomingMessage, res: ServerResponse) => {
-  return true
+  return send(res, 200)
 }
