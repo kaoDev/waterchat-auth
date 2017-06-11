@@ -2,6 +2,7 @@ import { IncomingMessage, ServerResponse } from 'http'
 import { send } from 'micro'
 import * as fsRouter from 'fs-router'
 import { initEventStoreConnection } from './persistence/eventStore'
+import * as cors from 'micro-cors'
 
 console.log('initializing micro-auth')
 
@@ -17,7 +18,7 @@ module.exports = async function(req: IncomingMessage, res: ServerResponse) {
   const matched = match(req)
 
   if (matched) {
-    return await matched(req, res)
+    return await cors()(await matched(req, res))
   }
 
   send(res, 404, { error: 'Not found' })

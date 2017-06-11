@@ -28,6 +28,7 @@
     "date-fns": "^1.28.5",
     "fs-router": "^0.3.0",
     "micro": "^7.3.3",
+    "micro-cors": "0.0.4",
     "micro-redirect": "^1.0.0",
     "microauth-facebook": "^0.0.3",
     "microauth-github": "^0.0.4",

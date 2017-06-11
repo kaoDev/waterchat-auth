@@ -33,3 +33,7 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
     send(res, 500)
   }
 }
+
+export const OPTIONS = async (req: IncomingMessage, res: ServerResponse) => {
+  return true
+}
