@@ -147,8 +147,13 @@ const createStateWithLoggedInUser = ({
   const loggedInUser = oldUsers.find(u => u.userId === userData.userId)
 
   if (loggedInUser) {
+    const displayName = loggedInUser.displayName === null
+      ? rawInfo.login
+      : loggedInUser.displayName
+
     const newUserData = {
       ...loggedInUser,
+      displayName,
       identifiers: [...loggedInUser.identifiers, ...identifiers],
     }
 

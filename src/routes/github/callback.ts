@@ -25,7 +25,7 @@ import * as redirect from 'micro-redirect'
 export const GET: GitHubAuthenticationRequestHandler = async (
   req: IncomingMessage,
   res: ServerResponse,
-  auth,
+  auth
 ) => {
   if (req.url === undefined) {
     return send(res, 403)
@@ -59,7 +59,7 @@ export const GET: GitHubAuthenticationRequestHandler = async (
     const userSessionId = generateSession(req, res, serviceState)
 
     const userObjectFromState = serviceState.users.find(u =>
-      u.identifiers.some(i => i.provider === provider && i.id === user.id),
+      u.identifiers.some(i => i.provider === provider && i.id === user.id)
     )
 
     if (userObjectFromState !== undefined) {
@@ -80,7 +80,7 @@ export const GET: GitHubAuthenticationRequestHandler = async (
     } else {
       const userRegisteredEvent: UserRegistered = {
         userId: uuid.v4(),
-        displayName: user.name,
+        displayName: user.name || user.login,
         rawInfo: user,
         type: USER_REGISTERED,
         identifiers: [
