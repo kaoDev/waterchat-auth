@@ -55,12 +55,17 @@ const createStateWithUserLoggedOut = ({
   })
 }
 
-const createStateWithNewUser = ({ users: oldUsers, ...rest }: State) => ({
+const createStateWithNewUser = ({
+  users: oldUsers,
+  sessions: oldSessions,
+  ...rest,
+}: State) => ({
   type,
   rawInfo,
   userId,
   identifiers,
   displayName,
+  sessionId,
 }: UserRegistered): State => {
   const user: User = {
     userId,
@@ -69,11 +74,22 @@ const createStateWithNewUser = ({ users: oldUsers, ...rest }: State) => ({
     profilePicture: rawInfo.avatar_url,
   }
 
+  const sessions: { [sessionId: string]: Session } = {
+    ...oldSessions,
+  }
+
+  sessions[sessionId] = Object.freeze({
+    dueDate: format(addMonths(new Date(), 3)),
+    user: user,
+    id: sessionId,
+  })
+
   const users = oldUsers.concat(user)
 
   return Object.freeze({
     ...rest,
     users,
+    sessions,
   })
 }
 
