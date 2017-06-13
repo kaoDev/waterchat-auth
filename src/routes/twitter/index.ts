@@ -36,6 +36,7 @@ const getRequestToken = () => {
   >((resolve, reject) => {
     getConsumer().getOAuthRequestToken(
       (err: any, requestToken, requestTokenSecret) => {
+        console.log('got something from twitter', err, requestToken)
         if (err) {
           return reject(err)
         }
@@ -58,7 +59,11 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
       querystring.parse(query).callback ||
       'http://office.cap3.de:57580/auth/protected'
 
+    console.log('request token')
+
     const results = await getRequestToken()
+    console.log('got twitter request token', results)
+
     states.set(results.requestToken, results)
     insertNewSessionIdWithCallback(
       results.requestToken,
@@ -70,6 +75,6 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
     const redirectLocation = getRedirectUrl(results.requestToken)
     return redirect(res, 302, redirectLocation)
   } catch (err) {
-    send(res, 500)
+    send(res, 500, err)
   }
 }
