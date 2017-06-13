@@ -32,7 +32,7 @@ const dummyCredentials = {
   scope: 'O_AUTH_REQUESTED_SCOPE',
 }
 
-const getEnvCredentials = (provider: string) => {
+export const getEnvCredentials = (provider: string) => {
   const idVar = `${provider.toUpperCase()}_ID`
   const secretVar = `${provider.toUpperCase()}_SECRET`
   const callbackVar = `${provider.toUpperCase()}_CALLBACK`
