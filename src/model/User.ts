@@ -1,4 +1,5 @@
 import { GitHubOauthUnScopedResult } from 'microauth'
+import { TwitterOAuthUser } from '../authentication/twitter'
 
 export type UserId = {
   readonly userId: string
@@ -13,11 +14,11 @@ export type ProfilePicture = {
 }
 
 export type OAuthRaw = {
-  readonly rawInfo: GitHubOauthUnScopedResult
+  readonly rawInfo: GitHubOauthUnScopedResult | TwitterOAuthUser
 }
 
 export type GitHubUserIdentifier = {
-  readonly provider: 'github'
+  readonly provider: 'github' | 'twitter'
   readonly accessToken: string
   readonly id: number
   readonly timestamp: number

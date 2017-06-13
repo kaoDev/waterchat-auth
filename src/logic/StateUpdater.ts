@@ -13,8 +13,10 @@ import {
 } from '../events/UserEvents'
 import { State } from '../model/State'
 import { Session } from '../model/Session'
-import { User } from '../model/User'
+import { User, OAuthRaw, UserDisplayName, ProfilePicture } from '../model/User'
+import { TwitterOAuthUser } from '../authentication/twitter'
 import { addMonths, format } from 'date-fns'
+import { GitHubOauthUnScopedResult } from 'microauth'
 
 export const initialState: State = Object.freeze({
   users: [],
@@ -55,6 +57,26 @@ const createStateWithUserLoggedOut = ({
   })
 }
 
+type UserDisplayData = (UserDisplayName & ProfilePicture)
+
+const createUserFromRawData = (data: OAuthRaw): UserDisplayData => {
+  if ((data.rawInfo as TwitterOAuthUser).provider === 'twitter') {
+    const twitterData = data.rawInfo as TwitterOAuthUser
+    return {
+      displayName: `@${twitterData.info.screen_name}`,
+      profilePicture:
+        twitterData.info.profile_image_url_https ||
+          twitterData.info.profile_image_url,
+    }
+  } else {
+    const gitHubData = data.rawInfo as GitHubOauthUnScopedResult
+    return {
+      displayName: gitHubData.name || gitHubData.login,
+      profilePicture: gitHubData.avatar_url,
+    }
+  }
+}
+
 const createStateWithNewUser = ({
   users: oldUsers,
   sessions: oldSessions,
@@ -70,8 +92,7 @@ const createStateWithNewUser = ({
   const user: User = {
     userId,
     identifiers,
-    displayName,
-    profilePicture: rawInfo.avatar_url,
+    ...createUserFromRawData({ rawInfo }),
   }
 
   const sessions: { [sessionId: string]: Session } = {
@@ -147,13 +168,12 @@ const createStateWithLoggedInUser = ({
   const loggedInUser = oldUsers.find(u => u.userId === userData.userId)
 
   if (loggedInUser) {
-    const displayName = loggedInUser.displayName === null
-      ? rawInfo.login
-      : loggedInUser.displayName
+    const { displayName, profilePicture } = createUserFromRawData({ rawInfo })
 
     const newUserData = {
       ...loggedInUser,
       displayName,
+      profilePicture,
       identifiers: [...loggedInUser.identifiers, ...identifiers],
     }
 

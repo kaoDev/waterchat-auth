@@ -5,7 +5,7 @@ import {
   UserIdentifier,
   SessionId,
 } from '../model/User'
-import { ValidationResult } from '../authentication/github'
+import { GitHubOAuthUser } from '../authentication/github'
 
 export const USER_REGISTERED = 'USER_REGISTERED'
 export const USER_PROFILE_CHANGED = 'USER_PROFILE_CHANGED'
@@ -45,7 +45,7 @@ export type UserLoggedOut = UserId &
   }
 
 export type UserTokenValidated = UserId &
-  ValidationResult & {
+  GitHubOAuthUser & {
     readonly provider: 'github'
     readonly type: typeof USER_TOKEN_VALIDATED
   }

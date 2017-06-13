@@ -44,7 +44,7 @@ export const githubLogin = async (code: string) => {
       client_id: clientId,
       client_secret: clientSecret,
       code,
-    },
+    }
   )
 
   return response as GitHubLoginResult
@@ -63,7 +63,7 @@ export const getUserInfo = async (accessToken: string) => {
   })
 }
 
-export type ValidationResult = {
+export type GitHubOAuthUser = {
   id: number
   url: string
   app: {
@@ -107,8 +107,8 @@ type NotFoundMessage = {
 }
 
 export const validateToken = async (
-  accessToken: string,
-): Promise<ValidationResult | false> => {
+  accessToken: string
+): Promise<GitHubOAuthUser | false> => {
   console.log('github validate token')
   const { clientId, clientSecret } = await loadCredentials({
     provider: 'github',
@@ -121,14 +121,14 @@ export const validateToken = async (
         headers: {
           'User-Agent': clientId,
           Authorization: `Basic ${new Buffer(
-            `${clientId}:${clientSecret}`,
+            `${clientId}:${clientSecret}`
           ).toString('base64')}`,
         },
-      },
+      }
     )
 
     const validationResult:
-      | ValidationResult
+      | GitHubOAuthUser
       | NotFoundMessage
       | undefined = await response.json().catch(e => console.error(e))
 
@@ -139,7 +139,7 @@ export const validateToken = async (
       return false
     }
 
-    return validationResult as ValidationResult
+    return validationResult as GitHubOAuthUser
   } catch (e) {
     return false
   }
@@ -147,21 +147,21 @@ export const validateToken = async (
 
 export const extractGitHubIdentifier = async (
   req: IncomingMessage,
-  res: ServerResponse,
+  res: ServerResponse
 ) => {
   const userAggregateState = await userState.take(1).toPromise()
   const session = getSession(req, res, userAggregateState)
 
   if (session !== undefined) {
     return session.user.identifiers.find(
-      identifier => identifier.provider === 'github',
+      identifier => identifier.provider === 'github'
     )
   }
 }
 
 export const userHasValidSession = async (
   req: IncomingMessage,
-  res: ServerResponse,
+  res: ServerResponse
 ) => {
   const userAggregateState = await userState.take(1).toPromise()
   const session = getSession(req, res, userAggregateState)
@@ -171,7 +171,7 @@ export const userHasValidSession = async (
 
 export const userHasValidCookie = async (
   req: IncomingMessage,
-  res: ServerResponse,
+  res: ServerResponse
 ) => {
   const githubIdentifier = await extractGitHubIdentifier(req, res)
   if (githubIdentifier !== undefined) {
@@ -182,26 +182,26 @@ export const userHasValidCookie = async (
 }
 
 type ValidationProvider = (
-  provider: string,
-) => ((accessToken: string) => Promise<ValidationResult | false>) | undefined
+  provider: string
+) => ((accessToken: string) => Promise<GitHubOAuthUser | false>) | undefined
 
 export const authenticateRequest = (
   loginRedirect: string,
   validationProvider: ValidationProvider,
-  eventInterceptor: (data: ValidationResult) => void,
+  eventInterceptor: (data: GitHubOAuthUser) => void
 ) => (
   handler: (
     req: IncomingMessage,
     res: ServerResponse,
-    context: DisplayUser,
-  ) => any,
+    context: DisplayUser
+  ) => any
 ) => async (req: IncomingMessage, res: ServerResponse) => {
   const userAggregateState = await userState.take(1).toPromise()
 
   const session = getSession(req, res, userAggregateState)
   if (session !== undefined && isBefore(new Date(), session.dueDate)) {
     const user = userAggregateState.users.find(
-      u => u.userId === session.user.userId,
+      u => u.userId === session.user.userId
     )
     if (user !== undefined) {
       return handler(req, res, displayUser(user))
@@ -218,7 +218,7 @@ export const authenticateRequest = (
         eventInterceptor(validationResult)
 
         const user = userAggregateState.users.find(u =>
-          u.identifiers.some(i => i.accessToken === validationResult.token),
+          u.identifiers.some(i => i.accessToken === validationResult.token)
         )
 
         if (user !== undefined) {

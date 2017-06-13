@@ -1,17 +1,22 @@
 import { send } from 'micro'
 import { IncomingMessage, ServerResponse } from 'http'
-// import * as uuid from 'uuid'
-// import {
-//   UserRegistered,
-//   USER_REGISTERED,
-//   USER_LOGGED_IN,
-// } from '../../events/UserEvents'
+import * as uuid from 'uuid'
+import {
+  UserRegistered,
+  USER_REGISTERED,
+  USER_LOGGED_IN,
+} from '../../events/UserEvents'
 import * as url from 'url'
 import * as querystring from 'querystring'
 import { getAuthSessions, removeAuthSession } from './index'
-// import { generateSession } from '../../logic/SessionFunctions'
-// import * as redirect from 'micro-redirect'
-import { getConsumer } from '../../authentication/twitter'
+import { generateSession } from '../../logic/SessionFunctions'
+import {
+  userState,
+  dispatchUserEvent,
+  initEventStoreConnection,
+} from '../../persistence/eventStore'
+import * as redirect from 'micro-redirect'
+import { getConsumer, TwitterOAuthUser } from '../../authentication/twitter'
 
 const provider = 'twitter'
 
@@ -75,9 +80,55 @@ export const GET = async (req: IncomingMessage, res: ServerResponse) => {
       info: JSON.parse(data),
       accessToken: results.accessToken,
       accessTokenSecret: results.accessTokenSecret,
+    } as TwitterOAuthUser
+
+    const serviceState = await userState.take(1).toPromise()
+
+    const userSessionId = generateSession(req, res, serviceState)
+
+    const userObjectFromState = serviceState.users.find(u =>
+      u.identifiers.some(
+        i => i.provider === provider && i.id === result.info.id
+      )
+    )
+
+    if (userObjectFromState !== undefined) {
+      dispatchUserEvent({
+        rawInfo: result,
+        userId: userObjectFromState.userId,
+        type: USER_LOGGED_IN,
+        identifiers: [
+          {
+            accessToken: result.accessToken,
+            id: result.info.id,
+            provider,
+            timestamp: Date.now(),
+          },
+        ],
+        sessionId: userSessionId,
+      })
+    } else {
+      const userRegisteredEvent: UserRegistered = {
+        userId: uuid.v4(),
+        displayName: `@${result.info.screen_name}`,
+        rawInfo: result,
+        type: USER_REGISTERED,
+        identifiers: [
+          {
+            accessToken: result.accessToken,
+            id: result.info.id,
+            provider,
+            timestamp: Date.now(),
+          },
+        ],
+        sessionId: userSessionId,
+      }
+
+      await initEventStoreConnection()
+      await dispatchUserEvent(userRegisteredEvent)
     }
 
-    send(res, 200, result)
+    return redirect(res, 302, `${state.callback}?sessionId=${userSessionId}`)
   } catch (err) {
     send(res, 500, err)
   }
